@@ -1,39 +1,42 @@
-# TaskFlow – Gerenciador de Tarefas
+TaskFlow
 
-**Grupo:** Juliano Rehling, Lucas Costa, Renan Chaves e André Henssler  
-**Arquitetura:** Hexagonal (Ports & Adapters) + EDA + Monolito
+Gerenciador de tarefas estilo Kanban desenvolvido como trabalho acadêmico para a disciplina de Arquitetura de Software.
 
----
+Grupo: Juliano Rehling, Lucas Costa, Renan Chaves e André Henssler
 
-## Estrutura do Projeto
 
-```
+Sobre o projeto
+
+O sistema permite criar tarefas e mover elas entre três status: Pendente, Em andamento e Concluído. Quando uma tarefa é concluída, um evento é disparado automaticamente — é aqui que entra o EDA.
+
+A arquitetura escolhida foi a Hexagonal (Ports & Adapters) rodando como monolito. A ideia principal é manter o core da aplicação completamente isolado de frameworks e banco de dados — o FastAPI e o PostgreSQL são detalhes de infraestrutura, não o centro do sistema.
+
+
+Estrutura
+
 taskflow/
 ├── core/
 │   ├── domain/
-│   │   └── task.py           # Entidade Task e enum TaskStatus
+│   │   └── task.py                    # Entidade Task e enum de status
 │   └── ports/
-│       └── task_service.py   # Casos de uso + interfaces (ports)
+│       └── task_service.py            # Casos de uso e interfaces
 ├── adapters/
 │   ├── http/
-│   │   └── task_router.py    # Adapter de entrada: API REST (FastAPI)
+│   │   └── task_router.py             # Entrada via API REST
 │   ├── db/
-│   │   └── postgres_repository.py  # Adapter de saída: PostgreSQL
+│   │   └── postgres_repository.py     # Persistência no PostgreSQL
 │   └── events/
-│       └── log_publisher.py  # Adapter de saída: publicador de eventos
+│       └── log_publisher.py           # Publicação de eventos
 ├── infrastructure/
-│   └── database.py           # Conexão e migrations do banco
-├── main.py                   # Ponto de entrada + injeção de dependências
+│   └── database.py                    # Conexão e criação da tabela
+├── main.py                            # Injeção de dependências e inicialização
 ├── Dockerfile
 ├── docker-compose.yml
 └── requirements.txt
-```
 
----
 
-## Arquitetura Hexagonal
+Como a arquitetura funciona na prática
 
-```
          [HTTP Request]
                ↓
      ┌─────────────────┐
@@ -49,69 +52,33 @@ taskflow/
      ↓                       ↓
 ┌──────────┐         ┌──────────────┐
 │ Postgres │         │ LogPublisher │  ← Adapters de SAÍDA
-│ Repo     │         │ (Evento EDA) │
+│   Repo   │         │ (Evento EDA) │
 └──────────┘         └──────────────┘
-```
 
-A regra principal da arquitetura hexagonal:
-> **O core nunca importa nada dos adapters.** Os adapters é que implementam as interfaces (ports) do core.
+A regra que guia tudo: o core não importa nada dos adapters. São os adapters que implementam as interfaces definidas pelo core, nunca o contrário.
 
----
 
-## EDA – Event-Driven Architecture
+Endpoints
 
-Quando uma tarefa tem o status atualizado para `done`, o `TaskService` publica automaticamente um evento `task.completed` via `EventPublisher`.
+MétodoRotaDescriçãoGET/tasks/Lista todas as tarefasPOST/tasks/Cria uma nova tarefaPATCH/tasks/{id}/statusAtualiza o statusGET/healthHealth check
 
-O `LogEventPublisher` é a implementação mínima (loga no console). Para expandir, basta criar um novo adapter implementando a mesma interface — ex: `RabbitMQPublisher`.
+Status aceitos: pending, in_progress, done
 
----
 
-## Endpoints
+Como rodar
 
-| Método | Rota                     | Descrição               |
-|--------|--------------------------|-------------------------|
-| GET    | `/tasks/`                | Lista todas as tarefas  |
-| POST   | `/tasks/`                | Cria uma nova tarefa    |
-| PATCH  | `/tasks/{id}/status`     | Atualiza o status       |
-| GET    | `/health`                | Health check            |
+bashdocker-compose up --build
 
-### Status disponíveis
-- `pending` – Pendente
-- `in_progress` – Em andamento
-- `done` – Concluído
+A documentação interativa fica disponível em http://localhost:8000/docs.
 
----
+Sem Docker, é necessário configurar as variáveis de ambiente do banco (DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASSWORD) e rodar uvicorn main:app --reload dentro da pasta do projeto.
 
-## Como rodar
 
-### Com Docker (recomendado)
-```bash
-docker-compose up --build
-```
+O que ainda falta
 
-### Sem Docker
-```bash
-pip install -r requirements.txt
 
-# Configure as variáveis de ambiente do banco:
-export DB_HOST=localhost
-export DB_PORT=5432
-export DB_NAME=taskflow
-export DB_USER=postgres
-export DB_PASSWORD=postgres
-
-uvicorn main:app --reload
-```
-
-Acesse a documentação interativa em: **http://localhost:8000/docs**
-
----
-
-## O que falta implementar
-
-- [ ] Autenticação (JWT ou sessão)
-- [ ] Deletar tarefas
-- [ ] Filtrar tarefas por status
-- [ ] Substituir `LogEventPublisher` por RabbitMQ/Kafka
-- [ ] Testes unitários do core (sem dependências externas)
-- [ ] Frontend Kanban
+Autenticação
+Deletar tarefas
+Filtrar por status
+Testes unitários do core
+Frontend Kanban
