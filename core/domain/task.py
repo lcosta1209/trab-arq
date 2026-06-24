@@ -8,7 +8,6 @@ class TaskStatus(str, Enum):
     IN_PROGRESS = "in_progress"
     DONE = "done"
 
-
 @dataclass
 class Task:
     id: int

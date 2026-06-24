@@ -3,9 +3,8 @@ from datetime import datetime
 from core.domain.task import Task, TaskStatus
 from core.ports.task_service import TaskRepository
 
-
 class PostgresTaskRepository(TaskRepository):
-    """Adapter de saída: implementação do repositório usando PostgreSQL."""
+    """Adapter de saída: implementação do repositório usando  PostgreSQL."""
 
     def __init__(self, conn):
         self.conn = conn

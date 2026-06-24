@@ -5,7 +5,6 @@ from core.ports.task_service import EventPublisher
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-
 class LogEventPublisher(EventPublisher):
     """
     Adapter de saída: implementação simples do publicador de eventos via log.

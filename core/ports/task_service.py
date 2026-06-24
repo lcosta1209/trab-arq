@@ -20,7 +20,7 @@ class TaskRepository(ABC):
 
 class EventPublisher(ABC):
     """Port de saída: contrato para publicação de eventos."""
-
+    
     @abstractmethod
     def publish(self, event_name: str, payload: dict) -> None:
         pass
