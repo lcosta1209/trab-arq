@@ -7,8 +7,7 @@ logger = logging.getLogger(__name__)
 
 class LogEventPublisher(EventPublisher):
     """
-    Adapter de saída: implementação simples do publicador de eventos via log.
-    Em produção, poderia ser substituído por RabbitMQ, Kafka, etc.
+    aqui seria onde ficaria o rabbitMQ ou seja teria um adapter de infra pra publicar o evento
     """
 
     def publish(self, event_name: str, payload: dict) -> None:
